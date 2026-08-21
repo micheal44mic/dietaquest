@@ -1,0 +1,99 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Baloo 2 Variable', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+
+  --color-cream: #fff6eb;
+  --color-card: #ffffff;
+  --color-ink: #4b4b4b;
+  --color-mute: #a89f96;
+  --color-line: #ece3d9;
+
+  --color-leaf: #58cc02;
+  --color-leaf-dark: #46a302;
+  --color-leaf-soft: #e8f9d8;
+  --color-sky: #1cb0f6;
+  --color-sky-dark: #1899d6;
+  --color-sky-soft: #ddf4ff;
+  --color-tang: #ff9600;
+  --color-tang-dark: #e08600;
+  --color-tang-soft: #ffeeda;
+  --color-berry: #ff4b4b;
+  --color-berry-dark: #d93b3b;
+  --color-berry-soft: #ffe3e3;
+  --color-grape: #ce82ff;
+  --color-grape-dark: #a560ec;
+  --color-grape-soft: #f4e6ff;
+  --color-sun: #ffc800;
+  --color-sun-dark: #e5a800;
+  --color-sun-soft: #fff4cc;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  /* Sotto i 16px iOS Safari zooma la pagina al focus */
+  font-size: 16px;
+}
+
+/* Bottone "chunky" 3D stile cartoon: il colore dell'ombra arriva da --btn-shadow */
+.btn3d {
+  box-shadow: 0 4px 0 var(--btn-shadow, #d0c6ba);
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    filter 0.15s ease;
+  will-change: transform;
+}
+.btn3d:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--btn-shadow, #d0c6ba);
+}
+
+.card {
+  background: var(--color-card);
+  border: 2px solid var(--color-line);
+  border-radius: 1.5rem;
+  box-shadow: 0 3px 0 var(--color-line);
+}
+
+/* Nasconde le freccine degli input number */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.float-slow {
+  animation: float-slow 3.5s ease-in-out infinite;
+}
