@@ -14,14 +14,28 @@ npm run build
 
 `npm run icons` rigenera le icone PWA (serve solo se cambi la mascotte).
 
-## Installarla sull'iPhone
+## Online
 
-Il dev server è esposto in rete: apri `http://<ip-del-pc>:<porta>` da Safari sull'iPhone, poi
-**Condividi → Aggiungi a Home**. Da lì parte a schermo intero, con icona e funziona offline.
+L'app è pubblicata su GitHub Pages: **https://micheal44mic.github.io/dietaquest/**
 
-Le particelle WebGPU girano solo su `localhost` o **HTTPS**. Da un IP in HTTP l'app funziona
-normalmente ma senza effetti; per vederli in rete locale serve un tunnel HTTPS
-(es. `npx localtunnel --port <porta>`).
+Da Safari sull'iPhone: **Condividi → Aggiungi a Home**. Da lì parte a schermo intero, funziona
+offline grazie al service worker e le particelle WebGPU girano (servono HTTPS o `localhost`).
+
+Per aggiornarla dopo una modifica:
+
+```bash
+npm run deploy
+```
+
+Compila e spinge la build sul branch `gh-pages`. Il sorgente sta su `main`; `dist` non viene
+versionata. L'aggiornamento sul telefono si vede al secondo avvio, perché il service worker
+scarica la versione nuova e la attiva al riavvio successivo.
+
+⚠️ Il percorso `/dietaquest/` è cablato in `vite.config.ts` (`BASE`): se rinomini il repository
+vanno cambiati anche `base`, `scope` e `start_url`, altrimenti la pagina resta bianca.
+
+I dati sono legati all'indirizzo: quelli registrati sul vecchio indirizzo locale non si spostano
+qui. Usa **Profilo → Esporta / Importa** per trasferirli.
 
 ## Come funziona il programma
 
