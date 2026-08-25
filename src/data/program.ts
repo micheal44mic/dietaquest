@@ -4,29 +4,20 @@ import type { Exercise, Meal, ProgramDay, Targets } from '../types'
  * Il programma vive nel codice, non nello storage: i log salvati puntano al
  * giorno-programma e all'id del pasto/esercizio. Così correggere un grammo o
  * un esercizio qui non richiede di azzerare lo storico.
- *
- * La creatina non compare fra gli alimenti perché è già una voce fissa della
- * routine giornaliera (vedi routine.ts): sarebbe una spunta doppia.
  */
 
 // ------------------------------------------------------------------- DIETA
 
 /**
- * Rotazione di frutta e verdura. Nel piano è indicizzata sui giorni 1-21, ma le
- * righe si ripetono identiche ogni 7 (1-8-15 condividono le stesse verdure):
- * basta quindi un ciclo di 7 posizioni.
+ * I sette giorni sono scritti per esteso, uno per uno, e non generati da
+ * funzioni condivise: nel piano le giornate dello stesso modello non sono più
+ * identiche (i giorni 1, 4 e 6 sono tutti "modello A" ma con 180, 200 e 180 g
+ * di pollo). Ripetere le quantità è più prolisso ma rende impossibile che una
+ * modifica a un giorno ne sposti un altro per sbaglio.
+ *
+ * La creatina non compare fra gli alimenti perché è già una voce fissa della
+ * routine giornaliera (vedi routine.ts): sarebbe una spunta doppia.
  */
-const ROTATION = [
-  { pranzo: 'Broccoli', cena: 'Zucchine' },
-  { pranzo: 'Carote e peperoni', cena: 'Spinaci' },
-  { pranzo: 'Broccoli', cena: 'Fagiolini' },
-  { pranzo: 'Cavolo e carote', cena: 'Zucchine' },
-  { pranzo: 'Broccoli', cena: 'Spinaci' },
-  { pranzo: 'Verdure miste surgelate', cena: 'Fagiolini' },
-  { pranzo: 'Broccoli', cena: 'Spinaci' },
-]
-
-const rot = (day: number) => ROTATION[(day - 1) % 7]
 
 const colazione = (items: string[], note?: string): Meal => ({
   id: 'colazione',
@@ -69,147 +60,201 @@ const cena = (items: string[]): Meal => ({
   items,
 })
 
-const T_A: Targets = { kcal: '≈2.286 kcal', protein: '161 g', carbs: '287 g', fat: '54 g' }
-const T_B: Targets = { kcal: '≈2.297 kcal', protein: '160 g', carbs: '287 g', fat: '56 g' }
-const T_C: Targets = { kcal: '≈2.281 kcal', protein: '152 g', carbs: '283 g', fat: '59 g' }
-const T_D: Targets = { kcal: '≈2.027 kcal', protein: '156 g', carbs: '226 g', fat: '56 g' }
-const T_E: Targets = { kcal: '≈2.034 kcal', protein: '151 g', carbs: '215 g', fat: '64 g' }
+const ALBUME_NOTA = 'L’albume va sempre consumato cotto'
 
+/** Colazione dei giorni con pesi, tranne il venerdì */
 const COLAZIONE_PESI = colazione(
   [
-    'Fiocchi d’avena 50 g',
+    'Pan bauletto bianco 70 g (≈3 fette)',
     'Latte parzialmente scremato 300 ml',
-    'Whey 15 g',
+    'Albume d’uovo 220 g',
     'Banana 120 g',
-    'Semi di lino macinati 10 g',
+    'Mandorle 10 g',
   ],
-  'Porridge, oppure lascia tutto in frigorifero la sera prima',
+  ALBUME_NOTA,
+)
+
+/** Colazione dei due giorni senza pesi */
+const COLAZIONE_RIPOSO = colazione(
+  [
+    'Pan bauletto bianco 70 g (≈3 fette)',
+    'Latte parzialmente scremato 250 ml',
+    'Albume d’uovo 250 g',
+    'Banana 100 g',
+    'Mandorle 10 g',
+  ],
+  ALBUME_NOTA,
 )
 
 const PRE_WORKOUT = pre(['Yogurt greco 0% 250 g', 'Gallette di riso 35 g', 'Marmellata 20 g'])
 
-const SPUNTINO_RIPOSO = spuntino([
-  'Yogurt greco 0% 250 g',
-  'Semi di girasole 10 g',
-  'Kiwi 150 g',
-])
+const SPUNTINO_RIPOSO = spuntino(['Yogurt greco 0% 250 g', 'Mandorle 10 g', 'Kiwi 150 g'])
 
-/** Modello A — giornate di parte alta (Upper A, Upper B, Upper C) */
-const MODEL_A = (day: number): Meal[] => [
+// Giorno 1 — modello A, Upper A
+const MEALS_1: Meal[] = [
   COLAZIONE_PESI,
   pranzo([
     'Riso basmati secco 80 g',
     'Petto di pollo 180 g',
-    `${rot(day).pranzo} 250 g`,
+    'Broccoli 250 g',
     'Olio extravergine 12 g',
     'Mela 180 g',
   ]),
   PRE_WORKOUT,
   cena([
     'Riso basmati secco 55 g',
-    'Pollo o tacchino 170 g',
-    `${rot(day).cena} 250 g`,
+    'Petto di tacchino 170 g',
+    'Zucchine 250 g',
     'Olio extravergine 15 g',
-    'Semi di girasole 8 g',
+    'Mandorle 8 g',
   ]),
 ]
 
-/** Modello B — Lower A. Colazione, pranzo e pre-workout come il modello A, con l'arancia */
-const MODEL_B = (day: number): Meal[] => [
+// Giorno 2 — modello B, Lower A
+const MEALS_2: Meal[] = [
   COLAZIONE_PESI,
   pranzo([
     'Riso basmati secco 80 g',
     'Petto di pollo 180 g',
-    `${rot(day).pranzo} 250 g`,
+    'Carote e peperoni 250 g',
     'Olio extravergine 12 g',
-    'Arancia 180-200 g',
+    'Arancia 190 g',
   ]),
   PRE_WORKOUT,
   cena([
     'Riso basmati secco 55 g',
     'Manzo magro 180 g',
-    `${rot(day).cena} 250 g`,
+    'Spinaci 250 g',
     'Olio extravergine 10 g',
-    'Semi di girasole 8 g',
+    'Mandorle 8 g',
   ]),
 ]
 
-/** Modello C — Lower B */
-const MODEL_C = (day: number): Meal[] => [
-  colazione(
-    [
-      'Fiocchi d’avena 50 g',
-      'Latte parzialmente scremato 300 ml',
-      'Whey 20 g',
-      'Banana 120 g',
-      'Semi di lino macinati 10 g',
-    ],
-    'Porridge, oppure lascia tutto in frigorifero la sera prima',
-  ),
-  pranzo([
-    'Riso basmati secco 70 g',
-    'Petto di pollo 180 g',
-    `${rot(day).pranzo} 250 g`,
-    'Olio extravergine 12 g',
-    'Arancia 180-200 g',
-  ]),
-  PRE_WORKOUT,
-  cena([
-    'Riso basmati secco 60 g',
-    'Salmone 130 g',
-    `${rot(day).cena} 250 g`,
-    'Olio extravergine 5 g',
-    'Semi di girasole 8 g',
-  ]),
-]
-
-const COLAZIONE_RIPOSO = colazione([
-  'Fiocchi d’avena 45 g',
-  'Latte parzialmente scremato 250 ml',
-  'Whey 20 g',
-  'Banana 100 g',
-  'Semi di lino macinati 10 g',
-])
-
-/** Modello D — primo giorno senza pesi della settimana */
-const MODEL_D = (day: number): Meal[] => [
+// Giorno 3 — modello D, riposo
+const MEALS_3: Meal[] = [
   COLAZIONE_RIPOSO,
   pranzo([
     'Riso basmati secco 40 g',
-    'Petto di pollo 180 g',
-    `${rot(day).pranzo} 300 g`,
+    'Petto di pollo 200 g',
+    'Broccoli 300 g',
     'Olio extravergine 15 g',
   ]),
   SPUNTINO_RIPOSO,
   cena([
-    'Patate 100 g',
+    'Patate 150 g',
     'Fagioli cotti e sgocciolati 100 g',
-    'Uova intere 110 g (circa 2)',
-    'Tonno al naturale sgocciolato 60 g',
-    `${rot(day).cena} 300 g`,
+    'Uova intere 110 g (≈2 uova)',
+    'Tonno al naturale sgocciolato 70 g',
+    'Fagiolini 300 g',
     'Olio extravergine 5 g',
     'Mela 180 g',
   ]),
 ]
 
-/** Modello E — secondo giorno senza pesi della settimana */
-const MODEL_E = (day: number): Meal[] => [
+// Giorno 4 — modello A, Upper B
+const MEALS_4: Meal[] = [
+  COLAZIONE_PESI,
+  pranzo([
+    'Riso basmati secco 80 g',
+    'Petto di pollo 200 g',
+    'Cavolo e carote 250 g',
+    'Olio extravergine 12 g',
+    'Mela 180 g',
+  ]),
+  PRE_WORKOUT,
+  cena([
+    'Riso basmati secco 55 g',
+    'Petto di tacchino 170 g',
+    'Zucchine 250 g',
+    'Olio extravergine 15 g',
+    'Mandorle 8 g',
+  ]),
+]
+
+// Giorno 5 — modello C, Lower B. Colazione con 250 g di albume, non 220
+const MEALS_5: Meal[] = [
+  colazione(
+    [
+      'Pan bauletto bianco 70 g (≈3 fette)',
+      'Latte parzialmente scremato 300 ml',
+      'Albume d’uovo 250 g',
+      'Banana 120 g',
+      'Mandorle 10 g',
+    ],
+    ALBUME_NOTA,
+  ),
+  pranzo([
+    'Riso basmati secco 70 g',
+    'Petto di pollo 200 g',
+    'Broccoli 250 g',
+    'Olio extravergine 12 g',
+    'Arancia 190 g',
+  ]),
+  PRE_WORKOUT,
+  cena([
+    'Riso basmati secco 60 g',
+    'Salmone 150 g',
+    'Spinaci 250 g',
+    'Olio extravergine 5 g',
+    'Mandorle 8 g',
+  ]),
+]
+
+// Giorno 6 — modello A, Upper C
+const MEALS_6: Meal[] = [
+  COLAZIONE_PESI,
+  pranzo([
+    'Riso basmati secco 80 g',
+    'Petto di pollo 180 g',
+    'Verdure miste surgelate 250 g',
+    'Olio extravergine 12 g',
+    'Mela 180 g',
+  ]),
+  PRE_WORKOUT,
+  cena([
+    'Riso basmati secco 55 g',
+    'Petto di tacchino 170 g',
+    'Fagiolini 250 g',
+    'Olio extravergine 15 g',
+    'Mandorle 8 g',
+  ]),
+]
+
+// Giorno 7 — modello E, riposo
+const MEALS_7: Meal[] = [
   COLAZIONE_RIPOSO,
   pranzo([
     'Riso basmati secco 30 g',
-    'Petto di pollo 180 g',
-    `${rot(day).pranzo} 300 g`,
+    'Petto di pollo 220 g',
+    'Broccoli 300 g',
     'Olio extravergine 15 g',
   ]),
   SPUNTINO_RIPOSO,
   cena([
     'Patate 200 g',
-    'Salmone 150 g',
-    `${rot(day).cena} 300 g`,
+    'Salmone 160 g',
+    'Spinaci 300 g',
     'Olio extravergine 5 g',
     'Mela 180 g',
   ]),
 ]
+
+const T1: Targets = { kcal: '2.243 kcal', protein: '181 g', carbs: '260 g', fat: '52 g', fiber: '26 g' }
+const T2: Targets = { kcal: '2.242 kcal', protein: '180 g', carbs: '267 g', fat: '50 g', fiber: '25 g' }
+const T3: Targets = { kcal: '2.026 kcal', protein: '182 g', carbs: '194 g', fat: '53 g', fiber: '44 g' }
+const T4: Targets = { kcal: '2.261 kcal', protein: '181 g', carbs: '266 g', fat: '52 g', fiber: '26 g' }
+const T5: Targets = { kcal: '2.302 kcal', protein: '181 g', carbs: '257 g', fat: '61 g', fiber: '26 g' }
+const T6: Targets = { kcal: '2.281 kcal', protein: '180 g', carbs: '269 g', fat: '52 g', fiber: '30 g' }
+const T7: Targets = { kcal: '2.055 kcal', protein: '182 g', carbs: '180 g', fat: '64 g', fiber: '35 g' }
+
+/** Media settimanale del piano, mostrata come riferimento */
+export const WEEKLY_AVERAGE: Targets = {
+  kcal: '2.201 kcal',
+  protein: '181 g',
+  carbs: '242 g',
+  fat: '55 g',
+  fiber: '30 g',
+}
 
 // -------------------------------------------------------------- ALLENAMENTO
 
@@ -394,8 +439,8 @@ export const PROGRAM: ProgramDay[] = [
     kind: 'upper',
     steps: 9000,
     rirNote: 'Le serie di riscaldamento non si contano',
-    meals: MODEL_A(1),
-    targets: T_A,
+    meals: MEALS_1,
+    targets: T1,
     dietModel: 'A',
     workout: UPPER_A,
   },
@@ -407,8 +452,8 @@ export const PROGRAM: ProgramDay[] = [
     kind: 'lower',
     steps: 9000,
     rirNote: 'Sui grandi esercizi resta a 1-2 RIR, mai al cedimento',
-    meals: MODEL_B(2),
-    targets: T_B,
+    meals: MEALS_2,
+    targets: T2,
     dietModel: 'B',
     workout: LOWER_A,
   },
@@ -420,8 +465,8 @@ export const PROGRAM: ProgramDay[] = [
     kind: 'riposo',
     steps: 9000,
     notes: [RIPOSO_NOTE],
-    meals: MODEL_D(3),
-    targets: T_D,
+    meals: MEALS_3,
+    targets: T3,
     dietModel: 'D',
     cardio: CYCLETTE,
   },
@@ -432,8 +477,8 @@ export const PROGRAM: ProgramDay[] = [
     subtitle: 'Centro schiena, spalle, braccia, poco petto',
     kind: 'upper',
     steps: 9000,
-    meals: MODEL_A(4),
-    targets: T_A,
+    meals: MEALS_4,
+    targets: T4,
     dietModel: 'A',
     workout: UPPER_B,
   },
@@ -444,8 +489,8 @@ export const PROGRAM: ProgramDay[] = [
     subtitle: 'Glutei e femorali, addome, collo',
     kind: 'lower',
     steps: 9000,
-    meals: MODEL_C(5),
-    targets: T_C,
+    meals: MEALS_5,
+    targets: T5,
     dietModel: 'C',
     workout: LOWER_B,
   },
@@ -457,8 +502,8 @@ export const PROGRAM: ProgramDay[] = [
     kind: 'upper',
     steps: 9000,
     rirNote: 'Superserie A1-A2 e B1-B2: seduta da 55-65 minuti',
-    meals: MODEL_A(6),
-    targets: T_A,
+    meals: MEALS_6,
+    targets: T6,
     dietModel: 'A',
     workout: UPPER_C,
   },
@@ -470,8 +515,8 @@ export const PROGRAM: ProgramDay[] = [
     kind: 'riposo',
     steps: 9000,
     notes: [RIPOSO_NOTE],
-    meals: MODEL_E(7),
-    targets: T_E,
+    meals: MEALS_7,
+    targets: T7,
     dietModel: 'E',
     cardio: CYCLETTE,
   },
@@ -494,48 +539,51 @@ export const INTRO_SETS: Record<string, number> = {
 /** Dopo 6-8 settimane il piano prevede una settimana di scarico */
 export const DELOAD_AFTER_WEEKS = 6
 
-/** Regole di pesatura: sbagliarle falsa tutto il test delle 21 giornate */
+/** Regole di pesatura: sbagliarle falsa i totali di tutta la settimana */
 export const WEIGHING_RULES = [
-  'Riso e avena: peso a secco',
+  'Riso: peso a secco',
   'Pollo, tacchino, manzo e salmone: peso crudo e pulito',
-  'Tonno e legumi: peso cotto e sgocciolato',
-  'Uova: senza guscio (110 g ≈ 2 uova grandi)',
-  'Olio: sempre pesato con la bilancia, mai a occhio',
-  'Frutta e verdura: parte commestibile',
-  'Acqua, caffè non zuccherato, tè, spezie, limone, aceto ed erbe non si contano',
-  'Le marche spostano 50-100 kcal: prevale sempre l’etichetta del prodotto che usi',
+  'Tonno e fagioli: peso cotto e sgocciolato',
+  'Uova: peso senza guscio',
+  'Albume: peso del prodotto, da consumare sempre cotto',
+  'Frutta e verdura: peso della parte commestibile',
+  'Olio extravergine: sempre pesato con la bilancia',
+  'Acqua, caffè o tè non zuccherati, spezie, limone, aceto ed erbe non si contano',
+  'Per pan bauletto, yogurt, gallette e marmellata fa fede l’etichetta del prodotto che compri',
 ]
 
-/** Spesa settimanale del piano */
+/** Spesa per 7 giorni */
 export const SHOPPING_LIST: Array<[string, string]> = [
   ['Riso basmati secco', '740 g'],
-  ['Avena', '340 g'],
+  ['Pan bauletto bianco', '490 g'],
   ['Gallette di riso', '175 g'],
-  ['Patate', '300 g'],
-  ['Pollo/tacchino', '1,77 kg'],
+  ['Patate', '350 g'],
+  ['Marmellata', '100 g'],
+  ['Albume d’uovo', '1,63 kg (≈1,7 litri in brick)'],
+  ['Petto di pollo', '1,36 kg'],
+  ['Petto di tacchino', '510 g'],
   ['Manzo magro', '180 g'],
-  ['Salmone', '280 g'],
-  ['Tonno sgocciolato', '60 g'],
-  ['Uova', '2 grandi'],
-  ['Fagioli sgocciolati', '100 g'],
+  ['Salmone', '310 g'],
+  ['Tonno al naturale sgocciolato', '70 g'],
+  ['Uova intere', '110 g senza guscio (≈2 grandi)'],
+  ['Fagioli cotti e sgocciolati', '100 g'],
   ['Latte parzialmente scremato', '2 litri'],
   ['Yogurt greco 0%', '1,75 kg'],
-  ['Whey', '120 g'],
-  ['Banane', '≈800 g commestibili'],
-  ['Mele', '≈5 da 180 g'],
-  ['Arance', '≈2 da 180-200 g'],
+  ['Banane', '800 g commestibili'],
+  ['Mele', '900 g (≈5 da 180 g)'],
+  ['Arance', '380 g (≈2)'],
   ['Kiwi', '300 g commestibili'],
-  ['Verdure miste', '≈3,7 kg'],
+  ['Broccoli', '1,10 kg'],
+  ['Carote e peperoni', '250 g'],
+  ['Cavolo e carote', '250 g'],
+  ['Verdure miste surgelate', '250 g'],
+  ['Zucchine', '500 g'],
+  ['Spinaci', '800 g'],
+  ['Fagiolini', '550 g'],
+  ['Mandorle', '130 g'],
   ['Olio extravergine', '160 g (≈175 ml)'],
-  ['Semi di lino macinati', '70 g'],
-  ['Semi di girasole', '60 g'],
-  ['Marmellata', '100 g'],
   ['Creatina', '35 g'],
 ]
 
-/**
- * Giorno in cui parte il giorno 1 della scheda. Il piano dice che si può
- * iniziare in qualunque giorno della settimana: il primo diventa il "lunedì"
- * del programma, e l'app mostra comunque la data reale.
- */
+/** Giorno in cui parte il giorno 1 della scheda. */
 export const PROGRAM_START = '2026-08-22'

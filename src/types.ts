@@ -46,6 +46,7 @@ export interface Targets {
   protein: string
   carbs: string
   fat: string
+  fiber: string
 }
 
 export interface ProgramDay {

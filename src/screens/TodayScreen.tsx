@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAppStore } from "../store/useAppStore";
 import { useStats } from "../hooks/useStats";
 import { useToday } from "../hooks/useToday";
-import { cyclePosition, dayFor, workoutFor } from "../game/cycle";
+import { cyclePosition, dayFor, totalSets, workoutFor } from "../game/cycle";
 import { routineFor, XP } from "../game/derive";
 import { WEIGHING_RULES } from "../data/program";
 import { addDays, dateKey, fmtLong, parseKey } from "../lib/dates";
@@ -69,7 +69,10 @@ export function TodayScreen() {
     setOffset((o) => o + delta);
   };
 
-  const style = KIND_STYLE[program.kind];
+  const style = KIND_STYLE[program.kind]
+  // Dagli esercizi e non dal log: prima di registrare qualcosa `day` non esiste
+  // ancora e l'anello mostrerebbe 0/0 invece del totale della seduta
+  const serieTotali = totalSets(exercises);
 
   if (inWorkout && exercises) {
     return (
@@ -244,8 +247,9 @@ export function TodayScreen() {
                 {program.dietModel}
               </h2>
               <p className="text-xs font-bold text-mute">
-                {program.targets.kcal} · {program.targets.protein} P ·{" "}
-                {program.targets.carbs} C · {program.targets.fat} G
+                {program.targets.kcal} · {program.targets.protein} P ·{' '}
+                {program.targets.carbs} C · {program.targets.fat} G ·{' '}
+                {program.targets.fiber} fibre
               </p>
             </div>
           </div>
@@ -311,14 +315,14 @@ export function TodayScreen() {
               <div className="flex items-center gap-3">
                 <ProgressRing
                   pct={
-                    day && day.setsTotal ? day.setsLogged / day.setsTotal : 0
+                    serieTotali ? (day?.setsLogged ?? 0) / serieTotali : 0
                   }
                   size={48}
                   stroke={6}
                   color="var(--color-tang)"
                 >
                   <span className="text-[11px] font-extrabold text-tang-dark">
-                    {day?.setsLogged ?? 0}/{day?.setsTotal ?? 0}
+                    {day?.setsLogged ?? 0}/{serieTotali}
                   </span>
                 </ProgressRing>
                 <div className="min-w-0 flex-1">

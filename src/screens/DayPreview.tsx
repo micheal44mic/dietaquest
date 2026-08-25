@@ -38,7 +38,7 @@ export function DayPreview({ program, exercises }: Props) {
       </h2>
       <p className="-mt-2 text-xs font-bold text-mute">
         {program.targets.kcal} · {program.targets.protein} P · {program.targets.carbs} C ·{' '}
-        {program.targets.fat} G
+        {program.targets.fat} G · {program.targets.fiber} fibre
       </p>
       {program.meals.map((meal) => (
         <div key={meal.id} className="card p-4">

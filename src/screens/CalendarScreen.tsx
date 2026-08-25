@@ -4,7 +4,7 @@ import { useAppStore } from '../store/useAppStore'
 import { useStats } from '../hooks/useStats'
 import { useToday } from '../hooks/useToday'
 import { cyclePosition, dayFor } from '../game/cycle'
-import { SHOPPING_LIST } from '../data/program'
+import { SHOPPING_LIST, WEEKLY_AVERAGE } from '../data/program'
 import { addDays, dateKey, MONTHS, startOfWeek, WEEKDAYS_SHORT } from '../lib/dates'
 import { ProgressRing } from '../components/ProgressRing'
 
@@ -157,8 +157,8 @@ function WeekView() {
           🛒 Spesa della settimana
         </summary>
         <p className="mt-1 text-xs font-bold text-mute">
-          Quantità per 7 giorni, da ripetere tre volte. Carne, pesce, verdura e latticini
-          conviene comprarli settimanalmente.
+          Quantità per 7 giorni. Media della settimana: {WEEKLY_AVERAGE.kcal} ·{' '}
+          {WEEKLY_AVERAGE.protein} P · {WEEKLY_AVERAGE.carbs} C · {WEEKLY_AVERAGE.fat} G.
         </p>
         <div className="mt-2 space-y-0.5">
           {SHOPPING_LIST.map(([nome, qta]) => (
