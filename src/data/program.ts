@@ -1,4 +1,4 @@
-import type { Exercise, Meal, ProgramDay, Targets } from '../types'
+import type { Exercise, Meal, ProgramDay } from '../types'
 
 /**
  * Il programma vive nel codice, non nello storage: i log salvati puntano al
@@ -9,251 +9,481 @@ import type { Exercise, Meal, ProgramDay, Targets } from '../types'
 // ------------------------------------------------------------------- DIETA
 
 /**
- * I sette giorni sono scritti per esteso, uno per uno, e non generati da
- * funzioni condivise: nel piano le giornate dello stesso modello non sono più
- * identiche (i giorni 1, 4 e 6 sono tutti "modello A" ma con 180, 200 e 180 g
- * di pollo). Ripetere le quantità è più prolisso ma rende impossibile che una
- * modifica a un giorno ne sposti un altro per sbaglio.
+ * Generato da `npm run dieta` a partire dal piano in formato testo: i valori
+ * nutrizionali arrivano dalla fonte, non da una trascrizione a mano.
+ * Non modificare a mano questo blocco, si perde alla prossima generazione.
+ *
+ * `grams` serve a ricalcolare i macro quando l'utente registra il proprio
+ * prodotto: le correzioni sono salvate per 100 g, così valgono in tutti i
+ * giorni anche dove la quantità cambia.
  *
  * La creatina non compare fra gli alimenti perché è già una voce fissa della
  * routine giornaliera (vedi routine.ts): sarebbe una spunta doppia.
  */
 
-const colazione = (items: string[], note?: string): Meal => ({
-  id: 'colazione',
-  name: 'Colazione',
-  emoji: '🥣',
-  time: '08:10',
-  items,
-  note,
-})
-
-const pranzo = (items: string[]): Meal => ({
-  id: 'pranzo',
-  name: 'Pranzo',
-  emoji: '🍝',
-  time: '13:00',
-  items,
-})
-
-const pre = (items: string[]): Meal => ({
-  id: 'pre',
-  name: 'Pre-workout',
-  emoji: '⚡',
-  time: '15:30',
-  items,
-})
-
-const spuntino = (items: string[]): Meal => ({
-  id: 'spuntino',
-  name: 'Spuntino',
-  emoji: '🥪',
-  time: '16:30',
-  items,
-})
-
-const cena = (items: string[]): Meal => ({
-  id: 'cena',
-  name: 'Cena',
-  emoji: '🍗',
-  time: '19:00',
-  items,
-})
-
-const ALBUME_NOTA = 'L’albume va sempre consumato cotto'
-
-/** Colazione dei giorni con pesi, tranne il venerdì */
-const COLAZIONE_PESI = colazione(
-  [
-    'Pan bauletto bianco 70 g (≈3 fette)',
-    'Latte parzialmente scremato 300 ml',
-    'Albume d’uovo 220 g',
-    'Banana 120 g',
-    'Mandorle 10 g',
-  ],
-  ALBUME_NOTA,
-)
-
-/** Colazione dei due giorni senza pesi */
-const COLAZIONE_RIPOSO = colazione(
-  [
-    'Pan bauletto bianco 70 g (≈3 fette)',
-    'Latte parzialmente scremato 250 ml',
-    'Albume d’uovo 250 g',
-    'Banana 100 g',
-    'Mandorle 10 g',
-  ],
-  ALBUME_NOTA,
-)
-
-const PRE_WORKOUT = pre(['Yogurt greco 0% 250 g', 'Gallette di riso 35 g', 'Marmellata 20 g'])
-
-const SPUNTINO_RIPOSO = spuntino(['Yogurt greco 0% 250 g', 'Mandorle 10 g', 'Kiwi 150 g'])
-
-// Giorno 1 — modello A, Upper A
 const MEALS_1: Meal[] = [
-  COLAZIONE_PESI,
-  pranzo([
-    'Riso basmati secco 80 g',
-    'Petto di pollo 180 g',
-    'Broccoli 250 g',
-    'Olio extravergine 12 g',
-    'Mela 180 g',
-  ]),
-  PRE_WORKOUT,
-  cena([
-    'Riso basmati secco 55 g',
-    'Petto di tacchino 170 g',
-    'Zucchine 250 g',
-    'Olio extravergine 15 g',
-    'Mandorle 8 g',
-  ]),
-]
-
-// Giorno 2 — modello B, Lower A
-const MEALS_2: Meal[] = [
-  COLAZIONE_PESI,
-  pranzo([
-    'Riso basmati secco 80 g',
-    'Petto di pollo 180 g',
-    'Carote e peperoni 250 g',
-    'Olio extravergine 12 g',
-    'Arancia 190 g',
-  ]),
-  PRE_WORKOUT,
-  cena([
-    'Riso basmati secco 55 g',
-    'Manzo magro 180 g',
-    'Spinaci 250 g',
-    'Olio extravergine 10 g',
-    'Mandorle 8 g',
-  ]),
-]
-
-// Giorno 3 — modello D, riposo
-const MEALS_3: Meal[] = [
-  COLAZIONE_RIPOSO,
-  pranzo([
-    'Riso basmati secco 40 g',
-    'Petto di pollo 200 g',
-    'Broccoli 300 g',
-    'Olio extravergine 15 g',
-  ]),
-  SPUNTINO_RIPOSO,
-  cena([
-    'Patate 150 g',
-    'Fagioli cotti e sgocciolati 100 g',
-    'Uova intere 110 g (≈2 uova)',
-    'Tonno al naturale sgocciolato 70 g',
-    'Fagiolini 300 g',
-    'Olio extravergine 5 g',
-    'Mela 180 g',
-  ]),
-]
-
-// Giorno 4 — modello A, Upper B
-const MEALS_4: Meal[] = [
-  COLAZIONE_PESI,
-  pranzo([
-    'Riso basmati secco 80 g',
-    'Petto di pollo 200 g',
-    'Cavolo e carote 250 g',
-    'Olio extravergine 12 g',
-    'Mela 180 g',
-  ]),
-  PRE_WORKOUT,
-  cena([
-    'Riso basmati secco 55 g',
-    'Petto di tacchino 170 g',
-    'Zucchine 250 g',
-    'Olio extravergine 15 g',
-    'Mandorle 8 g',
-  ]),
-]
-
-// Giorno 5 — modello C, Lower B. Colazione con 250 g di albume, non 220
-const MEALS_5: Meal[] = [
-  colazione(
-    [
-      'Pan bauletto bianco 70 g (≈3 fette)',
-      'Latte parzialmente scremato 300 ml',
-      'Albume d’uovo 250 g',
-      'Banana 120 g',
-      'Mandorle 10 g',
+  {
+    id: "colazione",
+    name: "Colazione",
+    emoji: "🥣",
+    time: "08:10",
+    note: 'L’albume va sempre consumato cotto',
+    items: [
+    { id: "pan-bauletto-bianco", name: "Pan bauletto bianco", qty: "70 g (≈3 fette)", grams: 70, kcal: 190, p: 5.9, c: 33.9, g: 2.7, fiber: 3.1 },
+    { id: "latte-parz-scremato", name: "Latte parz. scremato", qty: "300 ml", grams: 300, kcal: 138, p: 10.5, c: 15, g: 4.5, fiber: 0 },
+    { id: "albume-duovo", name: "Albume d'uovo", qty: "220 g", grams: 220, kcal: 95, p: 23.5, c: 0, g: 0, fiber: 0 },
+    { id: "banana", name: "Banana", qty: "120 g", grams: 120, kcal: 91, p: 1.4, c: 20.9, g: 0.4, fiber: 2.2 },
+    { id: "mandorle", name: "Mandorle", qty: "10 g", grams: 10, kcal: 63, p: 2.2, c: 0.5, g: 5.5, fiber: 1.3 },
     ],
-    ALBUME_NOTA,
-  ),
-  pranzo([
-    'Riso basmati secco 70 g',
-    'Petto di pollo 200 g',
-    'Broccoli 250 g',
-    'Olio extravergine 12 g',
-    'Arancia 190 g',
-  ]),
-  PRE_WORKOUT,
-  cena([
-    'Riso basmati secco 60 g',
-    'Salmone 150 g',
-    'Spinaci 250 g',
-    'Olio extravergine 5 g',
-    'Mandorle 8 g',
-  ]),
+  },
+  {
+    id: "pranzo",
+    name: "Pranzo",
+    emoji: "🍝",
+    time: "13:00",
+    items: [
+    { id: "riso-basmati-secco", name: "Riso basmati secco", qty: "80 g", grams: 80, kcal: 294, p: 7.2, c: 66.3, g: 1.5, fiber: 1 },
+    { id: "petto-di-pollo", name: "Petto di pollo", qty: "180 g", grams: 180, kcal: 180, p: 41.9, c: 0, g: 1.4, fiber: 0 },
+    { id: "broccoli", name: "Broccoli", qty: "250 g", grams: 250, kcal: 82, p: 7.5, c: 7.8, g: 1, fiber: 7.8 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "12 g", grams: 12, kcal: 108, p: 0, c: 0, g: 12, fiber: 0 },
+    { id: "mela", name: "Mela", qty: "180 g", grams: 180, kcal: 79, p: 0.4, c: 18, g: 0, fiber: 4.7 },
+    ],
+  },
+  {
+    id: "pre",
+    name: "Pre-workout",
+    emoji: "⚡",
+    time: "15:30",
+    items: [
+    { id: "yogurt-greco-0", name: "Yogurt greco 0%", qty: "250 g", grams: 250, kcal: 135, p: 25.8, c: 7.5, g: 0, fiber: 0 },
+    { id: "gallette-di-riso", name: "Gallette di riso", qty: "35 g", grams: 35, kcal: 134, p: 3, c: 28, g: 0.8, fiber: 1.1 },
+    { id: "marmellata", name: "Marmellata", qty: "20 g", grams: 20, kcal: 45, p: 0.1, c: 11.7, g: 0, fiber: 0.4 },
+    ],
+  },
+  {
+    id: "cena",
+    name: "Cena",
+    emoji: "🍗",
+    time: "19:00",
+    items: [
+    { id: "riso-basmati-secco", name: "Riso basmati secco", qty: "55 g", grams: 55, kcal: 202, p: 5, c: 45.6, g: 1, fiber: 0.7 },
+    { id: "petto-di-tacchino", name: "Petto di tacchino", qty: "170 g", grams: 170, kcal: 182, p: 40.8, c: 0, g: 2, fiber: 0 },
+    { id: "zucchine", name: "Zucchine", qty: "250 g", grams: 250, kcal: 40, p: 3.8, c: 4.2, g: 0.2, fiber: 3 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "15 g", grams: 15, kcal: 135, p: 0, c: 0, g: 15, fiber: 0 },
+    { id: "mandorle", name: "Mandorle", qty: "8 g", grams: 8, kcal: 50, p: 1.8, c: 0.4, g: 4.4, fiber: 1 },
+    ],
+  },
 ]
 
-// Giorno 6 — modello A, Upper C
+const MEALS_2: Meal[] = [
+  {
+    id: "colazione",
+    name: "Colazione",
+    emoji: "🥣",
+    time: "08:10",
+    note: 'L’albume va sempre consumato cotto',
+    items: [
+    { id: "pan-bauletto-bianco", name: "Pan bauletto bianco", qty: "70 g (≈3 fette)", grams: 70, kcal: 190, p: 5.9, c: 33.9, g: 2.7, fiber: 3.1 },
+    { id: "latte-parz-scremato", name: "Latte parz. scremato", qty: "300 ml", grams: 300, kcal: 138, p: 10.5, c: 15, g: 4.5, fiber: 0 },
+    { id: "albume-duovo", name: "Albume d'uovo", qty: "220 g", grams: 220, kcal: 95, p: 23.5, c: 0, g: 0, fiber: 0 },
+    { id: "banana", name: "Banana", qty: "120 g", grams: 120, kcal: 91, p: 1.4, c: 20.9, g: 0.4, fiber: 2.2 },
+    { id: "mandorle", name: "Mandorle", qty: "10 g", grams: 10, kcal: 63, p: 2.2, c: 0.5, g: 5.5, fiber: 1.3 },
+    ],
+  },
+  {
+    id: "pranzo",
+    name: "Pranzo",
+    emoji: "🍝",
+    time: "13:00",
+    items: [
+    { id: "riso-basmati-secco", name: "Riso basmati secco", qty: "80 g", grams: 80, kcal: 294, p: 7.2, c: 66.3, g: 1.5, fiber: 1 },
+    { id: "petto-di-pollo", name: "Petto di pollo", qty: "180 g", grams: 180, kcal: 180, p: 41.9, c: 0, g: 1.4, fiber: 0 },
+    { id: "carote-e-peperoni", name: "Carote e peperoni", qty: "250 g", grams: 250, kcal: 84, p: 2.5, c: 14.8, g: 0.6, fiber: 6.2 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "12 g", grams: 12, kcal: 108, p: 0, c: 0, g: 12, fiber: 0 },
+    { id: "arancia", name: "Arancia", qty: "190 g", grams: 190, kcal: 70, p: 1.3, c: 14.8, g: 0.4, fiber: 3 },
+    ],
+  },
+  {
+    id: "pre",
+    name: "Pre-workout",
+    emoji: "⚡",
+    time: "15:30",
+    items: [
+    { id: "yogurt-greco-0", name: "Yogurt greco 0%", qty: "250 g", grams: 250, kcal: 135, p: 25.8, c: 7.5, g: 0, fiber: 0 },
+    { id: "gallette-di-riso", name: "Gallette di riso", qty: "35 g", grams: 35, kcal: 134, p: 3, c: 28, g: 0.8, fiber: 1.1 },
+    { id: "marmellata", name: "Marmellata", qty: "20 g", grams: 20, kcal: 45, p: 0.1, c: 11.7, g: 0, fiber: 0.4 },
+    ],
+  },
+  {
+    id: "cena",
+    name: "Cena",
+    emoji: "🍗",
+    time: "19:00",
+    items: [
+    { id: "riso-basmati-secco", name: "Riso basmati secco", qty: "55 g", grams: 55, kcal: 202, p: 5, c: 45.6, g: 1, fiber: 0.7 },
+    { id: "manzo-magro", name: "Manzo magro", qty: "180 g", grams: 180, kcal: 185, p: 39.2, c: 0, g: 3.2, fiber: 0 },
+    { id: "spinaci", name: "Spinaci", qty: "250 g", grams: 250, kcal: 88, p: 8.5, c: 7.2, g: 1.8, fiber: 4.8 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "10 g", grams: 10, kcal: 90, p: 0, c: 0, g: 10, fiber: 0 },
+    { id: "mandorle", name: "Mandorle", qty: "8 g", grams: 8, kcal: 50, p: 1.8, c: 0.4, g: 4.4, fiber: 1 },
+    ],
+  },
+]
+
+const MEALS_3: Meal[] = [
+  {
+    id: "colazione",
+    name: "Colazione",
+    emoji: "🥣",
+    time: "08:10",
+    note: 'L’albume va sempre consumato cotto',
+    items: [
+    { id: "pan-bauletto-bianco", name: "Pan bauletto bianco", qty: "70 g (≈3 fette)", grams: 70, kcal: 190, p: 5.9, c: 33.9, g: 2.7, fiber: 3.1 },
+    { id: "latte-parz-scremato", name: "Latte parz. scremato", qty: "250 ml", grams: 250, kcal: 115, p: 8.8, c: 12.5, g: 3.8, fiber: 0 },
+    { id: "albume-duovo", name: "Albume d'uovo", qty: "250 g", grams: 250, kcal: 108, p: 26.8, c: 0, g: 0, fiber: 0 },
+    { id: "banana", name: "Banana", qty: "100 g", grams: 100, kcal: 76, p: 1.2, c: 17.4, g: 0.3, fiber: 1.8 },
+    { id: "mandorle", name: "Mandorle", qty: "10 g", grams: 10, kcal: 63, p: 2.2, c: 0.5, g: 5.5, fiber: 1.3 },
+    ],
+  },
+  {
+    id: "pranzo",
+    name: "Pranzo",
+    emoji: "🍝",
+    time: "13:00",
+    items: [
+    { id: "riso-basmati-secco", name: "Riso basmati secco", qty: "40 g", grams: 40, kcal: 147, p: 3.6, c: 33.2, g: 0.8, fiber: 0.5 },
+    { id: "petto-di-pollo", name: "Petto di pollo", qty: "200 g", grams: 200, kcal: 200, p: 46.6, c: 0, g: 1.6, fiber: 0 },
+    { id: "broccoli", name: "Broccoli", qty: "300 g", grams: 300, kcal: 99, p: 9, c: 9.3, g: 1.2, fiber: 9.3 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "15 g", grams: 15, kcal: 135, p: 0, c: 0, g: 15, fiber: 0 },
+    ],
+  },
+  {
+    id: "spuntino",
+    name: "Spuntino",
+    emoji: "🥪",
+    time: "16:30",
+    items: [
+    { id: "yogurt-greco-0", name: "Yogurt greco 0%", qty: "250 g", grams: 250, kcal: 135, p: 25.8, c: 7.5, g: 0, fiber: 0 },
+    { id: "mandorle", name: "Mandorle", qty: "10 g", grams: 10, kcal: 63, p: 2.2, c: 0.5, g: 5.5, fiber: 1.3 },
+    { id: "kiwi", name: "Kiwi", qty: "150 g", grams: 150, kcal: 72, p: 1.8, c: 13.5, g: 0.9, fiber: 3.3 },
+    ],
+  },
+  {
+    id: "cena",
+    name: "Cena",
+    emoji: "🍗",
+    time: "19:00",
+    items: [
+    { id: "patate", name: "Patate", qty: "150 g", grams: 150, kcal: 108, p: 3, c: 24, g: 0.2, fiber: 2.7 },
+    { id: "fagioli-cotti-sgocciolati", name: "Fagioli cotti sgocciolati", qty: "100 g", grams: 100, kcal: 106, p: 6.9, c: 16.4, g: 0.4, fiber: 6.9 },
+    { id: "uova-intere", name: "Uova intere", qty: "110 g (≈2 uova)", grams: 110, kcal: 141, p: 13.6, c: 0, g: 9.6, fiber: 0 },
+    { id: "tonno-al-naturale-sgocciolato", name: "Tonno al naturale sgocciolato", qty: "70 g", grams: 70, kcal: 72, p: 17.6, c: 0, g: 0.2, fiber: 0 },
+    { id: "fagiolini", name: "Fagiolini", qty: "300 g", grams: 300, kcal: 72, p: 6.3, c: 7.2, g: 0.3, fiber: 8.7 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "5 g", grams: 5, kcal: 45, p: 0, c: 0, g: 5, fiber: 0 },
+    { id: "mela", name: "Mela", qty: "180 g", grams: 180, kcal: 79, p: 0.4, c: 18, g: 0, fiber: 4.7 },
+    ],
+  },
+]
+
+const MEALS_4: Meal[] = [
+  {
+    id: "colazione",
+    name: "Colazione",
+    emoji: "🥣",
+    time: "08:10",
+    note: 'L’albume va sempre consumato cotto',
+    items: [
+    { id: "pan-bauletto-bianco", name: "Pan bauletto bianco", qty: "70 g (≈3 fette)", grams: 70, kcal: 190, p: 5.9, c: 33.9, g: 2.7, fiber: 3.1 },
+    { id: "latte-parz-scremato", name: "Latte parz. scremato", qty: "300 ml", grams: 300, kcal: 138, p: 10.5, c: 15, g: 4.5, fiber: 0 },
+    { id: "albume-duovo", name: "Albume d'uovo", qty: "220 g", grams: 220, kcal: 95, p: 23.5, c: 0, g: 0, fiber: 0 },
+    { id: "banana", name: "Banana", qty: "120 g", grams: 120, kcal: 91, p: 1.4, c: 20.9, g: 0.4, fiber: 2.2 },
+    { id: "mandorle", name: "Mandorle", qty: "10 g", grams: 10, kcal: 63, p: 2.2, c: 0.5, g: 5.5, fiber: 1.3 },
+    ],
+  },
+  {
+    id: "pranzo",
+    name: "Pranzo",
+    emoji: "🍝",
+    time: "13:00",
+    items: [
+    { id: "riso-basmati-secco", name: "Riso basmati secco", qty: "80 g", grams: 80, kcal: 294, p: 7.2, c: 66.3, g: 1.5, fiber: 1 },
+    { id: "petto-di-pollo", name: "Petto di pollo", qty: "200 g", grams: 200, kcal: 200, p: 46.6, c: 0, g: 1.6, fiber: 0 },
+    { id: "cavolo-e-carote", name: "Cavolo e carote", qty: "250 g", grams: 250, kcal: 80, p: 3, c: 13.9, g: 0.4, fiber: 7 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "12 g", grams: 12, kcal: 108, p: 0, c: 0, g: 12, fiber: 0 },
+    { id: "mela", name: "Mela", qty: "180 g", grams: 180, kcal: 79, p: 0.4, c: 18, g: 0, fiber: 4.7 },
+    ],
+  },
+  {
+    id: "pre",
+    name: "Pre-workout",
+    emoji: "⚡",
+    time: "15:30",
+    items: [
+    { id: "yogurt-greco-0", name: "Yogurt greco 0%", qty: "250 g", grams: 250, kcal: 135, p: 25.8, c: 7.5, g: 0, fiber: 0 },
+    { id: "gallette-di-riso", name: "Gallette di riso", qty: "35 g", grams: 35, kcal: 134, p: 3, c: 28, g: 0.8, fiber: 1.1 },
+    { id: "marmellata", name: "Marmellata", qty: "20 g", grams: 20, kcal: 45, p: 0.1, c: 11.7, g: 0, fiber: 0.4 },
+    ],
+  },
+  {
+    id: "cena",
+    name: "Cena",
+    emoji: "🍗",
+    time: "19:00",
+    items: [
+    { id: "riso-basmati-secco", name: "Riso basmati secco", qty: "55 g", grams: 55, kcal: 202, p: 5, c: 45.6, g: 1, fiber: 0.7 },
+    { id: "petto-di-tacchino", name: "Petto di tacchino", qty: "170 g", grams: 170, kcal: 182, p: 40.8, c: 0, g: 2, fiber: 0 },
+    { id: "zucchine", name: "Zucchine", qty: "250 g", grams: 250, kcal: 40, p: 3.8, c: 4.2, g: 0.2, fiber: 3 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "15 g", grams: 15, kcal: 135, p: 0, c: 0, g: 15, fiber: 0 },
+    { id: "mandorle", name: "Mandorle", qty: "8 g", grams: 8, kcal: 50, p: 1.8, c: 0.4, g: 4.4, fiber: 1 },
+    ],
+  },
+]
+
+const MEALS_5: Meal[] = [
+  {
+    id: "colazione",
+    name: "Colazione",
+    emoji: "🥣",
+    time: "08:10",
+    note: 'L’albume va sempre consumato cotto',
+    items: [
+    { id: "pan-bauletto-bianco", name: "Pan bauletto bianco", qty: "70 g (≈3 fette)", grams: 70, kcal: 190, p: 5.9, c: 33.9, g: 2.7, fiber: 3.1 },
+    { id: "latte-parz-scremato", name: "Latte parz. scremato", qty: "300 ml", grams: 300, kcal: 138, p: 10.5, c: 15, g: 4.5, fiber: 0 },
+    { id: "albume-duovo", name: "Albume d'uovo", qty: "250 g", grams: 250, kcal: 108, p: 26.8, c: 0, g: 0, fiber: 0 },
+    { id: "banana", name: "Banana", qty: "120 g", grams: 120, kcal: 91, p: 1.4, c: 20.9, g: 0.4, fiber: 2.2 },
+    { id: "mandorle", name: "Mandorle", qty: "10 g", grams: 10, kcal: 63, p: 2.2, c: 0.5, g: 5.5, fiber: 1.3 },
+    ],
+  },
+  {
+    id: "pranzo",
+    name: "Pranzo",
+    emoji: "🍝",
+    time: "13:00",
+    items: [
+    { id: "riso-basmati-secco", name: "Riso basmati secco", qty: "70 g", grams: 70, kcal: 257, p: 6.3, c: 58, g: 1.3, fiber: 0.9 },
+    { id: "petto-di-pollo", name: "Petto di pollo", qty: "200 g", grams: 200, kcal: 200, p: 46.6, c: 0, g: 1.6, fiber: 0 },
+    { id: "broccoli", name: "Broccoli", qty: "250 g", grams: 250, kcal: 82, p: 7.5, c: 7.8, g: 1, fiber: 7.8 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "12 g", grams: 12, kcal: 108, p: 0, c: 0, g: 12, fiber: 0 },
+    { id: "arancia", name: "Arancia", qty: "190 g", grams: 190, kcal: 70, p: 1.3, c: 14.8, g: 0.4, fiber: 3 },
+    ],
+  },
+  {
+    id: "pre",
+    name: "Pre-workout",
+    emoji: "⚡",
+    time: "15:30",
+    items: [
+    { id: "yogurt-greco-0", name: "Yogurt greco 0%", qty: "250 g", grams: 250, kcal: 135, p: 25.8, c: 7.5, g: 0, fiber: 0 },
+    { id: "gallette-di-riso", name: "Gallette di riso", qty: "35 g", grams: 35, kcal: 134, p: 3, c: 28, g: 0.8, fiber: 1.1 },
+    { id: "marmellata", name: "Marmellata", qty: "20 g", grams: 20, kcal: 45, p: 0.1, c: 11.7, g: 0, fiber: 0.4 },
+    ],
+  },
+  {
+    id: "cena",
+    name: "Cena",
+    emoji: "🍗",
+    time: "19:00",
+    items: [
+    { id: "riso-basmati-secco", name: "Riso basmati secco", qty: "60 g", grams: 60, kcal: 220, p: 5.4, c: 49.7, g: 1.1, fiber: 0.8 },
+    { id: "salmone", name: "Salmone", qty: "150 g", grams: 150, kcal: 278, p: 27.6, c: 1.5, g: 18, fiber: 0 },
+    { id: "spinaci", name: "Spinaci", qty: "250 g", grams: 250, kcal: 88, p: 8.5, c: 7.2, g: 1.8, fiber: 4.8 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "5 g", grams: 5, kcal: 45, p: 0, c: 0, g: 5, fiber: 0 },
+    { id: "mandorle", name: "Mandorle", qty: "8 g", grams: 8, kcal: 50, p: 1.8, c: 0.4, g: 4.4, fiber: 1 },
+    ],
+  },
+]
+
 const MEALS_6: Meal[] = [
-  COLAZIONE_PESI,
-  pranzo([
-    'Riso basmati secco 80 g',
-    'Petto di pollo 180 g',
-    'Verdure miste surgelate 250 g',
-    'Olio extravergine 12 g',
-    'Mela 180 g',
-  ]),
-  PRE_WORKOUT,
-  cena([
-    'Riso basmati secco 55 g',
-    'Petto di tacchino 170 g',
-    'Fagiolini 250 g',
-    'Olio extravergine 15 g',
-    'Mandorle 8 g',
-  ]),
+  {
+    id: "colazione",
+    name: "Colazione",
+    emoji: "🥣",
+    time: "08:10",
+    note: 'L’albume va sempre consumato cotto',
+    items: [
+    { id: "pan-bauletto-bianco", name: "Pan bauletto bianco", qty: "70 g (≈3 fette)", grams: 70, kcal: 190, p: 5.9, c: 33.9, g: 2.7, fiber: 3.1 },
+    { id: "latte-parz-scremato", name: "Latte parz. scremato", qty: "300 ml", grams: 300, kcal: 138, p: 10.5, c: 15, g: 4.5, fiber: 0 },
+    { id: "albume-duovo", name: "Albume d'uovo", qty: "220 g", grams: 220, kcal: 95, p: 23.5, c: 0, g: 0, fiber: 0 },
+    { id: "banana", name: "Banana", qty: "120 g", grams: 120, kcal: 91, p: 1.4, c: 20.9, g: 0.4, fiber: 2.2 },
+    { id: "mandorle", name: "Mandorle", qty: "10 g", grams: 10, kcal: 63, p: 2.2, c: 0.5, g: 5.5, fiber: 1.3 },
+    ],
+  },
+  {
+    id: "pranzo",
+    name: "Pranzo",
+    emoji: "🍝",
+    time: "13:00",
+    items: [
+    { id: "riso-basmati-secco", name: "Riso basmati secco", qty: "80 g", grams: 80, kcal: 294, p: 7.2, c: 66.3, g: 1.5, fiber: 1 },
+    { id: "petto-di-pollo", name: "Petto di pollo", qty: "180 g", grams: 180, kcal: 180, p: 41.9, c: 0, g: 1.4, fiber: 0 },
+    { id: "verdure-miste-surgelate", name: "Verdure miste surgelate", qty: "250 g", grams: 250, kcal: 100, p: 5, c: 15, g: 1, fiber: 7.5 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "12 g", grams: 12, kcal: 108, p: 0, c: 0, g: 12, fiber: 0 },
+    { id: "mela", name: "Mela", qty: "180 g", grams: 180, kcal: 79, p: 0.4, c: 18, g: 0, fiber: 4.7 },
+    ],
+  },
+  {
+    id: "pre",
+    name: "Pre-workout",
+    emoji: "⚡",
+    time: "15:30",
+    items: [
+    { id: "yogurt-greco-0", name: "Yogurt greco 0%", qty: "250 g", grams: 250, kcal: 135, p: 25.8, c: 7.5, g: 0, fiber: 0 },
+    { id: "gallette-di-riso", name: "Gallette di riso", qty: "35 g", grams: 35, kcal: 134, p: 3, c: 28, g: 0.8, fiber: 1.1 },
+    { id: "marmellata", name: "Marmellata", qty: "20 g", grams: 20, kcal: 45, p: 0.1, c: 11.7, g: 0, fiber: 0.4 },
+    ],
+  },
+  {
+    id: "cena",
+    name: "Cena",
+    emoji: "🍗",
+    time: "19:00",
+    items: [
+    { id: "riso-basmati-secco", name: "Riso basmati secco", qty: "55 g", grams: 55, kcal: 202, p: 5, c: 45.6, g: 1, fiber: 0.7 },
+    { id: "petto-di-tacchino", name: "Petto di tacchino", qty: "170 g", grams: 170, kcal: 182, p: 40.8, c: 0, g: 2, fiber: 0 },
+    { id: "fagiolini", name: "Fagiolini", qty: "250 g", grams: 250, kcal: 60, p: 5.2, c: 6, g: 0.2, fiber: 7.2 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "15 g", grams: 15, kcal: 135, p: 0, c: 0, g: 15, fiber: 0 },
+    { id: "mandorle", name: "Mandorle", qty: "8 g", grams: 8, kcal: 50, p: 1.8, c: 0.4, g: 4.4, fiber: 1 },
+    ],
+  },
 ]
 
-// Giorno 7 — modello E, riposo
 const MEALS_7: Meal[] = [
-  COLAZIONE_RIPOSO,
-  pranzo([
-    'Riso basmati secco 30 g',
-    'Petto di pollo 220 g',
-    'Broccoli 300 g',
-    'Olio extravergine 15 g',
-  ]),
-  SPUNTINO_RIPOSO,
-  cena([
-    'Patate 200 g',
-    'Salmone 160 g',
-    'Spinaci 300 g',
-    'Olio extravergine 5 g',
-    'Mela 180 g',
-  ]),
+  {
+    id: "colazione",
+    name: "Colazione",
+    emoji: "🥣",
+    time: "08:10",
+    note: 'L’albume va sempre consumato cotto',
+    items: [
+    { id: "pan-bauletto-bianco", name: "Pan bauletto bianco", qty: "70 g (≈3 fette)", grams: 70, kcal: 190, p: 5.9, c: 33.9, g: 2.7, fiber: 3.1 },
+    { id: "latte-parz-scremato", name: "Latte parz. scremato", qty: "250 ml", grams: 250, kcal: 115, p: 8.8, c: 12.5, g: 3.8, fiber: 0 },
+    { id: "albume-duovo", name: "Albume d'uovo", qty: "250 g", grams: 250, kcal: 108, p: 26.8, c: 0, g: 0, fiber: 0 },
+    { id: "banana", name: "Banana", qty: "100 g", grams: 100, kcal: 76, p: 1.2, c: 17.4, g: 0.3, fiber: 1.8 },
+    { id: "mandorle", name: "Mandorle", qty: "10 g", grams: 10, kcal: 63, p: 2.2, c: 0.5, g: 5.5, fiber: 1.3 },
+    ],
+  },
+  {
+    id: "pranzo",
+    name: "Pranzo",
+    emoji: "🍝",
+    time: "13:00",
+    items: [
+    { id: "riso-basmati-secco", name: "Riso basmati secco", qty: "30 g", grams: 30, kcal: 110, p: 2.7, c: 24.9, g: 0.6, fiber: 0.4 },
+    { id: "petto-di-pollo", name: "Petto di pollo", qty: "220 g", grams: 220, kcal: 220, p: 51.3, c: 0, g: 1.8, fiber: 0 },
+    { id: "broccoli", name: "Broccoli", qty: "300 g", grams: 300, kcal: 99, p: 9, c: 9.3, g: 1.2, fiber: 9.3 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "15 g", grams: 15, kcal: 135, p: 0, c: 0, g: 15, fiber: 0 },
+    ],
+  },
+  {
+    id: "spuntino",
+    name: "Spuntino",
+    emoji: "🥪",
+    time: "16:30",
+    items: [
+    { id: "yogurt-greco-0", name: "Yogurt greco 0%", qty: "250 g", grams: 250, kcal: 135, p: 25.8, c: 7.5, g: 0, fiber: 0 },
+    { id: "mandorle", name: "Mandorle", qty: "10 g", grams: 10, kcal: 63, p: 2.2, c: 0.5, g: 5.5, fiber: 1.3 },
+    { id: "kiwi", name: "Kiwi", qty: "150 g", grams: 150, kcal: 72, p: 1.8, c: 13.5, g: 0.9, fiber: 3.3 },
+    ],
+  },
+  {
+    id: "cena",
+    name: "Cena",
+    emoji: "🍗",
+    time: "19:00",
+    items: [
+    { id: "patate", name: "Patate", qty: "200 g", grams: 200, kcal: 144, p: 4, c: 32, g: 0.2, fiber: 3.6 },
+    { id: "salmone", name: "Salmone", qty: "160 g", grams: 160, kcal: 296, p: 29.4, c: 1.6, g: 19.2, fiber: 0 },
+    { id: "spinaci", name: "Spinaci", qty: "300 g", grams: 300, kcal: 105, p: 10.2, c: 8.7, g: 2.1, fiber: 5.7 },
+    { id: "olio-extravergine", name: "Olio extravergine", qty: "5 g", grams: 5, kcal: 45, p: 0, c: 0, g: 5, fiber: 0 },
+    { id: "mela", name: "Mela", qty: "180 g", grams: 180, kcal: 79, p: 0.4, c: 18, g: 0, fiber: 4.7 },
+    ],
+  },
 ]
 
-const T1: Targets = { kcal: '2.243 kcal', protein: '181 g', carbs: '260 g', fat: '52 g', fiber: '26 g' }
-const T2: Targets = { kcal: '2.242 kcal', protein: '180 g', carbs: '267 g', fat: '50 g', fiber: '25 g' }
-const T3: Targets = { kcal: '2.026 kcal', protein: '182 g', carbs: '194 g', fat: '53 g', fiber: '44 g' }
-const T4: Targets = { kcal: '2.261 kcal', protein: '181 g', carbs: '266 g', fat: '52 g', fiber: '26 g' }
-const T5: Targets = { kcal: '2.302 kcal', protein: '181 g', carbs: '257 g', fat: '61 g', fiber: '26 g' }
-const T6: Targets = { kcal: '2.281 kcal', protein: '180 g', carbs: '269 g', fat: '52 g', fiber: '30 g' }
-const T7: Targets = { kcal: '2.055 kcal', protein: '182 g', carbs: '180 g', fat: '64 g', fiber: '35 g' }
+export const MEALS_BY_DAY: Meal[][] = [MEALS_1, MEALS_2, MEALS_3, MEALS_4, MEALS_5, MEALS_6, MEALS_7]
 
-/** Media settimanale del piano, mostrata come riferimento */
-export const WEEKLY_AVERAGE: Targets = {
-  kcal: '2.201 kcal',
-  protein: '181 g',
-  carbs: '242 g',
-  fat: '55 g',
-  fiber: '30 g',
+/** id alimento -> nome usato dal piano */
+export const ALL_FOODS: Record<string, string> = {
+  "pan-bauletto-bianco": "Pan bauletto bianco",
+  "latte-parz-scremato": "Latte parz. scremato",
+  "albume-duovo": "Albume d'uovo",
+  "banana": "Banana",
+  "mandorle": "Mandorle",
+  "riso-basmati-secco": "Riso basmati secco",
+  "petto-di-pollo": "Petto di pollo",
+  "broccoli": "Broccoli",
+  "olio-extravergine": "Olio extravergine",
+  "mela": "Mela",
+  "yogurt-greco-0": "Yogurt greco 0%",
+  "gallette-di-riso": "Gallette di riso",
+  "marmellata": "Marmellata",
+  "petto-di-tacchino": "Petto di tacchino",
+  "zucchine": "Zucchine",
+  "carote-e-peperoni": "Carote e peperoni",
+  "arancia": "Arancia",
+  "manzo-magro": "Manzo magro",
+  "spinaci": "Spinaci",
+  "kiwi": "Kiwi",
+  "patate": "Patate",
+  "fagioli-cotti-sgocciolati": "Fagioli cotti sgocciolati",
+  "uova-intere": "Uova intere",
+  "tonno-al-naturale-sgocciolato": "Tonno al naturale sgocciolato",
+  "fagiolini": "Fagiolini",
+  "cavolo-e-carote": "Cavolo e carote",
+  "salmone": "Salmone",
+  "verdure-miste-surgelate": "Verdure miste surgelate",
+}
+
+/** Regole di pesatura: sbagliarle falsa i totali di tutta la settimana */
+export const WEIGHING_RULES = [
+  "Riso: peso a secco",
+  "Pollo, tacchino, manzo e salmone: peso crudo e pulito",
+  "Tonno e fagioli: peso cotto e sgocciolato",
+  "Uova: peso senza guscio",
+  "Albume: peso del prodotto, da consumare sempre cotto",
+  "Frutta e verdura: peso della parte commestibile",
+  "Olio extravergine: sempre pesato con la bilancia",
+  "Acqua, caffè o tè non zuccherati, spezie, limone, aceto ed erbe non si contano",
+  "Per i prodotti confezionati fa fede l’etichetta: correggi i valori dal pasto",
+]
+
+/** Spesa per 7 giorni */
+export const SHOPPING_LIST: Array<[string, string]> = [
+  ["Gallette di riso", "175 g"],
+  ["Patate", "350 g"],
+  ["Marmellata", "100 g"],
+  ["Albume d'uovo", "1,63 kg; in pratica circa 1,7 litri in brick"],
+  ["Petto di pollo", "1,36 kg"],
+  ["Petto di tacchino", "510 g"],
+  ["Manzo magro", "180 g"],
+  ["Salmone", "310 g"],
+  ["Tonno al naturale sgocciolato", "70 g"],
+  ["Uova intere", "110 g senza guscio; circa 2 uova grandi"],
+  ["Fagioli cotti e sgocciolati", "100 g"],
+  ["Latte parzialmente scremato", "2 litri"],
+  ["Yogurt greco 0%", "1,75 kg"],
+  ["Banane", "800 g commestibili"],
+  ["Mele", "900 g; circa 5 mele da 180 g"],
+  ["Arance", "380 g; circa 2 arance"],
+  ["Kiwi", "300 g commestibili"],
+  ["Broccoli", "1,10 kg"],
+  ["Carote e peperoni", "250 g totali"],
+  ["Cavolo e carote", "250 g totali"],
+  ["Verdure miste surgelate", "250 g"],
+  ["Zucchine", "500 g"],
+  ["Spinaci", "800 g"],
+  ["Fagiolini", "550 g"],
+  ["Mandorle", "130 g totali"],
+  ["Olio extravergine", "160 g; circa 175 ml"],
+  ["Creatina", "35 g"],
+]
+
+/** Media settimanale del piano */
+export const WEEKLY_AVERAGE = {
+  kcal: 2201,
+  p: 180.8,
+  c: 241.7,
+  g: 54.9,
+  fiber: 30.2,
 }
 
 // -------------------------------------------------------------- ALLENAMENTO
@@ -440,7 +670,6 @@ export const PROGRAM: ProgramDay[] = [
     steps: 9000,
     rirNote: 'Le serie di riscaldamento non si contano',
     meals: MEALS_1,
-    targets: T1,
     dietModel: 'A',
     workout: UPPER_A,
   },
@@ -453,7 +682,6 @@ export const PROGRAM: ProgramDay[] = [
     steps: 9000,
     rirNote: 'Sui grandi esercizi resta a 1-2 RIR, mai al cedimento',
     meals: MEALS_2,
-    targets: T2,
     dietModel: 'B',
     workout: LOWER_A,
   },
@@ -466,7 +694,6 @@ export const PROGRAM: ProgramDay[] = [
     steps: 9000,
     notes: [RIPOSO_NOTE],
     meals: MEALS_3,
-    targets: T3,
     dietModel: 'D',
     cardio: CYCLETTE,
   },
@@ -478,7 +705,6 @@ export const PROGRAM: ProgramDay[] = [
     kind: 'upper',
     steps: 9000,
     meals: MEALS_4,
-    targets: T4,
     dietModel: 'A',
     workout: UPPER_B,
   },
@@ -490,7 +716,6 @@ export const PROGRAM: ProgramDay[] = [
     kind: 'lower',
     steps: 9000,
     meals: MEALS_5,
-    targets: T5,
     dietModel: 'C',
     workout: LOWER_B,
   },
@@ -503,7 +728,6 @@ export const PROGRAM: ProgramDay[] = [
     steps: 9000,
     rirNote: 'Superserie A1-A2 e B1-B2: seduta da 55-65 minuti',
     meals: MEALS_6,
-    targets: T6,
     dietModel: 'A',
     workout: UPPER_C,
   },
@@ -516,7 +740,6 @@ export const PROGRAM: ProgramDay[] = [
     steps: 9000,
     notes: [RIPOSO_NOTE],
     meals: MEALS_7,
-    targets: T7,
     dietModel: 'E',
     cardio: CYCLETTE,
   },
@@ -539,51 +762,4 @@ export const INTRO_SETS: Record<string, number> = {
 /** Dopo 6-8 settimane il piano prevede una settimana di scarico */
 export const DELOAD_AFTER_WEEKS = 6
 
-/** Regole di pesatura: sbagliarle falsa i totali di tutta la settimana */
-export const WEIGHING_RULES = [
-  'Riso: peso a secco',
-  'Pollo, tacchino, manzo e salmone: peso crudo e pulito',
-  'Tonno e fagioli: peso cotto e sgocciolato',
-  'Uova: peso senza guscio',
-  'Albume: peso del prodotto, da consumare sempre cotto',
-  'Frutta e verdura: peso della parte commestibile',
-  'Olio extravergine: sempre pesato con la bilancia',
-  'Acqua, caffè o tè non zuccherati, spezie, limone, aceto ed erbe non si contano',
-  'Per pan bauletto, yogurt, gallette e marmellata fa fede l’etichetta del prodotto che compri',
-]
-
-/** Spesa per 7 giorni */
-export const SHOPPING_LIST: Array<[string, string]> = [
-  ['Riso basmati secco', '740 g'],
-  ['Pan bauletto bianco', '490 g'],
-  ['Gallette di riso', '175 g'],
-  ['Patate', '350 g'],
-  ['Marmellata', '100 g'],
-  ['Albume d’uovo', '1,63 kg (≈1,7 litri in brick)'],
-  ['Petto di pollo', '1,36 kg'],
-  ['Petto di tacchino', '510 g'],
-  ['Manzo magro', '180 g'],
-  ['Salmone', '310 g'],
-  ['Tonno al naturale sgocciolato', '70 g'],
-  ['Uova intere', '110 g senza guscio (≈2 grandi)'],
-  ['Fagioli cotti e sgocciolati', '100 g'],
-  ['Latte parzialmente scremato', '2 litri'],
-  ['Yogurt greco 0%', '1,75 kg'],
-  ['Banane', '800 g commestibili'],
-  ['Mele', '900 g (≈5 da 180 g)'],
-  ['Arance', '380 g (≈2)'],
-  ['Kiwi', '300 g commestibili'],
-  ['Broccoli', '1,10 kg'],
-  ['Carote e peperoni', '250 g'],
-  ['Cavolo e carote', '250 g'],
-  ['Verdure miste surgelate', '250 g'],
-  ['Zucchine', '500 g'],
-  ['Spinaci', '800 g'],
-  ['Fagiolini', '550 g'],
-  ['Mandorle', '130 g'],
-  ['Olio extravergine', '160 g (≈175 ml)'],
-  ['Creatina', '35 g'],
-]
-
-/** Giorno in cui parte il giorno 1 della scheda. */
 export const PROGRAM_START = '2026-08-22'

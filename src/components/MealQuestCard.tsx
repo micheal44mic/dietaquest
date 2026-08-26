@@ -1,6 +1,11 @@
 import { motion } from 'framer-motion'
+import { useMemo } from 'react'
 import type { Meal, MealStatus } from '../types'
+import { useAppStore } from '../store/useAppStore'
 import { XP } from '../game/derive'
+import { resolveMeal, somma } from '../game/nutrition'
+import { num } from '../lib/format'
+import { FoodRow } from './FoodRow'
 import { fx } from '../fx/FxLayer'
 import { sfx } from '../fx/sound'
 
@@ -11,6 +16,10 @@ interface Props {
 }
 
 export function MealQuestCard({ meal, status, onChange }: Props) {
+  const overrides = useAppStore((s) => s.overrides)
+  const items = useMemo(() => resolveMeal(meal, overrides), [meal, overrides])
+  const tot = useMemo(() => somma(items.map((i) => i.actual)), [items])
+
   const eaten = status === 'eaten'
   const skipped = status === 'skipped'
 
@@ -60,36 +69,28 @@ export function MealQuestCard({ meal, status, onChange }: Props) {
             </span>
           </div>
           <div className="text-xs font-bold text-mute">🕐 {meal.time}</div>
-
-          {meal.intro && (
-            <p className="mt-1 text-xs font-extrabold text-mute">{meal.intro}</p>
-          )}
-          <ul className="mt-1 space-y-0.5">
-            {meal.items.map((f) => (
-              <li key={f} className="text-sm font-semibold text-ink/80">
-                • {f}
-              </li>
-            ))}
-          </ul>
-          {meal.extra && (
-            <>
-              <p className="mt-1.5 text-xs font-extrabold text-mute">Aggiungi:</p>
-              <ul className="space-y-0.5">
-                {meal.extra.map((f) => (
-                  <li key={f} className="text-sm font-semibold text-ink/80">
-                    • {f}
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          {meal.note && (
-            <p className="mt-2 rounded-xl bg-sky-soft px-2 py-1 text-xs font-bold text-sky-dark">
-              ☕ {meal.note}
-            </p>
-          )}
         </div>
       </div>
+
+      {/* Alimenti: tocca una riga per registrare il tuo prodotto */}
+      <div className="mt-2">
+        {items.map((i, k) => (
+          <FoodRow key={`${i.id}-${k}`} item={i} />
+        ))}
+      </div>
+
+      <div className="mt-2 flex items-baseline justify-between gap-2 rounded-xl bg-cream px-3 py-1.5">
+        <span className="text-xs font-extrabold text-mute">Totale pasto</span>
+        <span className="text-sm font-extrabold">
+          {tot.kcal} kcal · {num(tot.p)} P · {num(tot.c)} C · {num(tot.g)} G · {num(tot.fiber)} fibre
+        </span>
+      </div>
+
+      {meal.note && (
+        <p className="mt-2 rounded-xl bg-sky-soft px-2 py-1 text-xs font-bold text-sky-dark">
+          🥚 {meal.note}
+        </p>
+      )}
 
       <div className="mt-3 flex gap-2">
         <button

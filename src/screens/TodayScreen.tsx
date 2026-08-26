@@ -5,6 +5,8 @@ import { useStats } from "../hooks/useStats";
 import { useToday } from "../hooks/useToday";
 import { cyclePosition, dayFor, totalSets, workoutFor } from "../game/cycle";
 import { routineFor, XP } from "../game/derive";
+import { dayTotals } from "../game/nutrition";
+import { num } from "../lib/format";
 import { WEIGHING_RULES } from "../data/program";
 import { addDays, dateKey, fmtLong, parseKey } from "../lib/dates";
 import { thousands } from "../lib/format";
@@ -43,6 +45,7 @@ export function TodayScreen() {
   const settings = useAppStore((s) => s.settings);
   const meals = useAppStore((s) => s.logs[date]?.meals);
   const setMealStatus = useAppStore((s) => s.setMealStatus);
+  const overrides = useAppStore((s) => s.overrides);
   const stats = useStats();
   const [inWorkout, setInWorkout] = useState(false);
 
@@ -73,6 +76,9 @@ export function TodayScreen() {
   // Dagli esercizi e non dal log: prima di registrare qualcosa `day` non esiste
   // ancora e l'anello mostrerebbe 0/0 invece del totale della seduta
   const serieTotali = totalSets(exercises);
+  // Il totale nasce dagli alimenti, non da un valore fisso: così riflette
+  // subito i prodotti che l'utente ha corretto con quelli della sua etichetta
+  const nutrienti = dayTotals(program.meals, overrides);
 
   if (inWorkout && exercises) {
     return (
@@ -247,9 +253,8 @@ export function TodayScreen() {
                 {program.dietModel}
               </h2>
               <p className="text-xs font-bold text-mute">
-                {program.targets.kcal} · {program.targets.protein} P ·{' '}
-                {program.targets.carbs} C · {program.targets.fat} G ·{' '}
-                {program.targets.fiber} fibre
+                {nutrienti.kcal} kcal · {num(nutrienti.p)} P · {num(nutrienti.c)} C ·{" "}
+                {num(nutrienti.g)} G · {num(nutrienti.fiber)} fibre
               </p>
             </div>
           </div>

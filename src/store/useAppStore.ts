@@ -1,6 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { AppData, BodyEntry, DayLog, MealStatus, SetLog, Settings } from '../types'
+import type {
+  AppData,
+  BodyEntry,
+  DayLog,
+  FoodOverride,
+  MealStatus,
+  SetLog,
+  Settings,
+} from '../types'
 import { PROGRAM_START } from '../data/program'
 import { STORAGE_KEY } from '../lib/storage'
 
@@ -36,6 +44,11 @@ interface AppState extends AppData {
   clearSet: (date: string, exerciseId: string, index: number) => void
   setBody: (date: string, entry: Partial<BodyEntry>) => void
 
+  /** Registra i valori del prodotto comprato davvero, per 100 g */
+  setOverride: (foodId: string, o: FoodOverride) => void
+  /** Torna ai valori del piano per quella voce */
+  clearOverride: (foodId: string) => void
+
   setName: (name: string) => void
   toggleSound: () => void
   setStartDate: (date: string) => void
@@ -63,6 +76,7 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       logs: {},
       body: {},
+      overrides: {},
       settings: { ...DEFAULT_SETTINGS },
       seenBadges: [],
       seenLevel: 1,
@@ -122,6 +136,16 @@ export const useAppStore = create<AppState>()(
           return { body }
         }),
 
+      setOverride: (foodId, o) =>
+        set((s) => ({ overrides: { ...s.overrides, [foodId]: o } })),
+
+      clearOverride: (foodId) =>
+        set((s) => {
+          const overrides = { ...s.overrides }
+          delete overrides[foodId]
+          return { overrides }
+        }),
+
       setName: (name) => set((s) => ({ settings: { ...s.settings, name } })),
 
       toggleSound: () => set((s) => ({ settings: { ...s.settings, sound: !s.settings.sound } })),
@@ -142,6 +166,7 @@ export const useAppStore = create<AppState>()(
         set(() => ({
           logs: data.logs ?? {},
           body: data.body ?? {},
+          overrides: data.overrides ?? {},
           settings: { ...DEFAULT_SETTINGS, ...data.settings },
           silentSync: true,
         })),
@@ -150,6 +175,7 @@ export const useAppStore = create<AppState>()(
         set(() => ({
           logs: {},
           body: {},
+          overrides: {},
           settings: { ...DEFAULT_SETTINGS },
           seenBadges: [],
           seenLevel: 1,
@@ -170,6 +196,7 @@ export const useAppStore = create<AppState>()(
           ...current,
           logs: p.logs ?? {},
           body: p.body ?? {},
+          overrides: p.overrides ?? {},
           settings: { ...DEFAULT_SETTINGS, ...(p.settings ?? {}) },
           seenBadges: p.seenBadges ?? [],
           seenLevel: p.seenLevel ?? 1,

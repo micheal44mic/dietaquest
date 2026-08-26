@@ -1,6 +1,10 @@
 import { motion } from 'framer-motion'
 import type { Exercise, ProgramDay } from '../types'
 import { MOBILITY } from '../data/routine'
+import { useAppStore } from '../store/useAppStore'
+import { dayTotals, resolveMeal, somma } from '../game/nutrition'
+import { FoodRow } from '../components/FoodRow'
+import { num } from '../lib/format'
 import { thousands } from '../lib/format'
 
 interface Props {
@@ -13,6 +17,9 @@ interface Props {
  * mangiato senza falsare XP, streak e medie — qui serve solo per prepararsi.
  */
 export function DayPreview({ program, exercises }: Props) {
+  const overrides = useAppStore((s) => s.overrides)
+  const nutrienti = dayTotals(program.meals, overrides)
+
   return (
     <div className="space-y-3">
       <motion.div
@@ -37,8 +44,8 @@ export function DayPreview({ program, exercises }: Props) {
         Cosa mangerai 🍽️ · modello {program.dietModel}
       </h2>
       <p className="-mt-2 text-xs font-bold text-mute">
-        {program.targets.kcal} · {program.targets.protein} P · {program.targets.carbs} C ·{' '}
-        {program.targets.fat} G · {program.targets.fiber} fibre
+        {nutrienti.kcal} kcal · {num(nutrienti.p)} P · {num(nutrienti.c)} C ·{' '}
+        {num(nutrienti.g)} G · {num(nutrienti.fiber)} fibre
       </p>
       {program.meals.map((meal) => (
         <div key={meal.id} className="card p-4">
@@ -47,29 +54,18 @@ export function DayPreview({ program, exercises }: Props) {
             <h3 className="flex-1 text-base font-extrabold">{meal.name}</h3>
             <span className="text-xs font-bold text-mute">🕐 {meal.time}</span>
           </div>
-          {meal.intro && <p className="mt-1 text-xs font-extrabold text-mute">{meal.intro}</p>}
-          <ul className="mt-1 space-y-0.5">
-            {meal.items.map((f) => (
-              <li key={f} className="text-sm font-semibold text-ink/80">
-                • {f}
-              </li>
-            ))}
-          </ul>
-          {meal.extra && (
-            <>
-              <p className="mt-1.5 text-xs font-extrabold text-mute">Aggiungi:</p>
-              <ul className="space-y-0.5">
-                {meal.extra.map((f) => (
-                  <li key={f} className="text-sm font-semibold text-ink/80">
-                    • {f}
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+          {resolveMeal(meal, overrides).map((i, k) => (
+            <FoodRow key={`${i.id}-${k}`} item={i} readOnly />
+          ))}
+          <div className="mt-1.5 flex items-baseline justify-between gap-2 rounded-xl bg-cream px-2.5 py-1">
+            <span className="text-[11px] font-extrabold text-mute">Totale</span>
+            <span className="text-xs font-extrabold">
+              {somma(resolveMeal(meal, overrides).map((i) => i.actual)).kcal} kcal
+            </span>
+          </div>
           {meal.note && (
             <p className="mt-2 rounded-xl bg-sky-soft px-2 py-1 text-xs font-bold text-sky-dark">
-              ☕ {meal.note}
+              🥚 {meal.note}
             </p>
           )}
         </div>

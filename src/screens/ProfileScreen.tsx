@@ -9,6 +9,8 @@ import { Mascot } from '../components/Mascot'
 import { backupSize, validateBackup } from '../lib/validateBackup'
 import { fmtLong, parseKey } from '../lib/dates'
 import { checkStorage, type StorageHealth } from '../lib/storage'
+import { ALL_FOODS } from '../data/program'
+import { num } from '../lib/format'
 import type { AppData } from '../types'
 
 function Riga({ etichetta, valore }: { etichetta: string; valore: string }) {
@@ -28,6 +30,8 @@ export function ProfileScreen() {
   const shiftDay = useAppStore((s) => s.shiftDay)
   const resetAll = useAppStore((s) => s.resetAll)
   const importData = useAppStore((s) => s.importData)
+  const overrides = useAppStore((s) => s.overrides)
+  const clearOverride = useAppStore((s) => s.clearOverride)
   const stats = useStats()
   const today = useToday()
 
@@ -51,8 +55,8 @@ export function ProfileScreen() {
   }
 
   const exportJson = () => {
-    const { logs, body } = useAppStore.getState()
-    const data: AppData = { logs, body, settings }
+    const { logs, body, overrides } = useAppStore.getState()
+    const data: AppData = { logs, body, settings, overrides }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -306,6 +310,37 @@ export function ProfileScreen() {
           </button>
         )}
       </div>
+
+      {/* I prodotti corretti dall'utente, per ritrovarli senza cercarli fra i pasti */}
+      {Object.keys(overrides).length > 0 && (
+        <div className="card p-4">
+          <h2 className="text-base font-extrabold">🏷️ I tuoi prodotti</h2>
+          <p className="mt-0.5 text-xs font-bold text-mute">
+            Valori per 100 g che sostituiscono quelli del piano in tutti i giorni.
+          </p>
+          <div className="mt-2 space-y-1.5">
+            {Object.entries(overrides).map(([id, o]) => (
+              <div key={id} className="flex items-center gap-2 rounded-xl bg-cream px-3 py-2">
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-extrabold">
+                    {o.name ?? ALL_FOODS[id] ?? id}
+                  </div>
+                  <div className="text-[10px] font-bold text-mute">
+                    {ALL_FOODS[id] ?? id} · {o.kcal} kcal · {num(o.p)} P · {num(o.c)} C ·{' '}
+                    {num(o.g)} G · {num(o.fiber)} fibre per 100 g
+                  </div>
+                </div>
+                <button
+                  onClick={() => clearOverride(id)}
+                  className="shrink-0 text-xs font-extrabold text-berry underline"
+                >
+                  ripristina
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Diagnostica: serve a capire perché su un certo telefono i dati non restano */}
       <details className="card p-4">

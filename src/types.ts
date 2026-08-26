@@ -2,17 +2,53 @@ export type MealStatus = 'eaten' | 'skipped'
 
 export type DayKind = 'upper' | 'lower' | 'riposo'
 
+/** Un alimento del piano, con i valori nutrizionali della porzione prevista */
+export interface FoodItem {
+  /** Stabile e condiviso fra i giorni: lega la correzione dell'utente a tutte le occorrenze */
+  id: string
+  name: string
+  /** Testo mostrato, es. "70 g (≈3 fette)" */
+  qty: string
+  /** Quantità in grammi o ml, per ricalcolare dai valori per 100 g */
+  grams: number
+  kcal: number
+  p: number
+  c: number
+  g: number
+  fiber: number
+}
+
+/**
+ * Valori del prodotto realmente comprato, presi dall'etichetta.
+ * Sono per 100 g proprio perché la stessa voce compare con quantità diverse
+ * nei vari giorni: salvando la densità, ogni porzione si ricalcola da sola.
+ */
+export interface FoodOverride {
+  /** Nome del prodotto, se l'utente vuole ricordarsi la marca */
+  name?: string
+  kcal: number
+  p: number
+  c: number
+  g: number
+  fiber: number
+}
+
+/** Somma nutrizionale di un pasto o di una giornata */
+export interface Nutrients {
+  kcal: number
+  p: number
+  c: number
+  g: number
+  fiber: number
+}
+
 /** Un pasto prescritto dal programma (vive nel codice, non nello storage) */
 export interface Meal {
   id: string
   name: string
   emoji: string
   time: string
-  /** Riga introduttiva tipo "Pancake preparato con:" */
-  intro?: string
-  items: string[]
-  /** Voci da aggiungere dopo la preparazione */
-  extra?: string[]
+  items: FoodItem[]
   note?: string
 }
 
@@ -41,14 +77,6 @@ export interface Cardio {
   steps: string[]
 }
 
-export interface Targets {
-  kcal: string
-  protein: string
-  carbs: string
-  fat: string
-  fiber: string
-}
-
 export interface ProgramDay {
   /** 1..7 */
   day: number
@@ -59,8 +87,6 @@ export interface ProgramDay {
   kind: DayKind
   steps: number
   meals: Meal[]
-  /** Calorie e macro della giornata: differiscono fra pesi e recupero */
-  targets: Targets
   /** Lettera del modello alimentare del piano (A-E) */
   dietModel: string
   workout?: Exercise[]
@@ -111,4 +137,6 @@ export interface AppData {
   logs: Record<string, DayLog>
   body: Record<string, BodyEntry>
   settings: Settings
+  /** id alimento -> valori del prodotto dell'utente, per 100 g */
+  overrides: Record<string, FoodOverride>
 }

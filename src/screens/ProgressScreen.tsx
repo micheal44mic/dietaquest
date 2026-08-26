@@ -77,6 +77,7 @@ export function ProgressScreen() {
   const body = useAppStore((s) => s.body)
   const logs = useAppStore((s) => s.logs)
   const settings = useAppStore((s) => s.settings)
+  const overrides = useAppStore((s) => s.overrides)
   const setBody = useAppStore((s) => s.setBody)
   const stats = useStats()
   const today = useToday()
@@ -84,7 +85,7 @@ export function ProgressScreen() {
   const [metric, setMetric] = useState<keyof BodyEntry>('weight')
   const [drafts, setDrafts] = useState<Partial<Record<keyof BodyEntry, string>>>({})
 
-  const data = useMemo(() => ({ logs, body, settings }), [logs, body, settings])
+  const data = useMemo(() => ({ logs, body, settings, overrides }), [logs, body, settings, overrides])
   const advice = useMemo(() => calorieAdvice(data), [data])
   const weeks = useMemo(() => weeklyWeights(data), [data])
 

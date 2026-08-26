@@ -157,8 +157,8 @@ function WeekView() {
           🛒 Spesa della settimana
         </summary>
         <p className="mt-1 text-xs font-bold text-mute">
-          Quantità per 7 giorni. Media della settimana: {WEEKLY_AVERAGE.kcal} ·{' '}
-          {WEEKLY_AVERAGE.protein} P · {WEEKLY_AVERAGE.carbs} C · {WEEKLY_AVERAGE.fat} G.
+          Quantità per 7 giorni. Media della settimana: {WEEKLY_AVERAGE.kcal} kcal ·{' '}
+          {WEEKLY_AVERAGE.p} P · {WEEKLY_AVERAGE.c} C · {WEEKLY_AVERAGE.g} G.
         </p>
         <div className="mt-2 space-y-0.5">
           {SHOPPING_LIST.map(([nome, qta]) => (

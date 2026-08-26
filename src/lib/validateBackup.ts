@@ -42,7 +42,19 @@ export function validateBackup(raw: unknown): AppData | null {
   )
   if (!bodyOk) return null
 
-  return raw as unknown as AppData
+  // I backup fatti prima dei prodotti personalizzati non hanno questa chiave
+  if (raw.overrides !== undefined) {
+    if (!isObj(raw.overrides)) return null
+    const ok = Object.values(raw.overrides).every(
+      (o) =>
+        isObj(o) &&
+        (o.name === undefined || typeof o.name === 'string') &&
+        ['kcal', 'p', 'c', 'g', 'fiber'].every((k) => typeof o[k] === 'number'),
+    )
+    if (!ok) return null
+  }
+
+  return { ...raw, overrides: raw.overrides ?? {} } as unknown as AppData
 }
 
 /** Quanti giorni di storico contiene un backup, per mostrarlo nella conferma */

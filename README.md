@@ -106,9 +106,35 @@ La dieta non è un menù diverso ogni giorno: sono **5 modelli** legati al tipo 
 | D | primo giorno senza pesi | 2.027 kcal · 156 g P |
 | E | secondo giorno senza pesi | 2.034 kcal · 151 g P |
 
-Le verdure seguono la **rotazione settimanale** del piano: nel codice è un ciclo di 7 posizioni
-(`ROTATION` in `program.ts`), perché nella tabella originale i giorni 1-8-15 condividono le stesse
-verdure. La creatina non compare fra gli alimenti perché è già una voce fissa della routine.
+I sette giorni sono **generati dal piano in formato testo**, non trascritti a mano:
+
+```bash
+npm run dieta
+```
+
+Legge `dieta_settimanale_testo_mandorle.txt` e riscrive il blocco DIETA di `src/data/program.ts`
+con nome, quantità e valori nutrizionali di ogni alimento. Prima di scrivere controlla che la somma
+degli alimenti torni con i totali di ogni pasto e di ogni giorno dichiarati nella fonte, e che lo
+stesso alimento abbia sempre la stessa densità per 100 g. Se qualcosa non torna non scrive niente.
+
+Quel blocco **non va modificato a mano**: si perde alla generazione successiva. Per cambiare la
+dieta si aggiorna il file di testo e si rilancia il comando.
+
+La creatina non compare fra gli alimenti perché è già una voce fissa della routine.
+
+### I tuoi prodotti
+
+Toccando un alimento dentro un pasto si aprono i valori **per 100 g**, precompilati con quelli del
+piano: ci scrivi quelli dell'etichetta del prodotto che hai comprato davvero e da lì in poi l'app
+usa i tuoi.
+
+Sono salvati per 100 g e non per porzione di proposito: lo stesso alimento compare con quantità
+diverse nei vari giorni — il pollo va da 180 a 220 g — quindi ogni porzione si ricalcola da sola.
+Registri il prodotto una volta e vale per tutta la settimana.
+
+I totali di pasto e di giornata sono calcolati sommando gli alimenti, quindi si aggiornano subito.
+L'elenco dei prodotti corretti sta in **Profilo → 🏷️ I tuoi prodotti**, da dove si ripristinano
+i valori del piano. Finiscono anche nei backup.
 
 | Percorso | Cosa contiene |
 | --- | --- |

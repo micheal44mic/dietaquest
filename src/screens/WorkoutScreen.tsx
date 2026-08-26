@@ -157,7 +157,8 @@ function ExerciseCard({
   const logs = useAppStore((s) => s.logs)
   const body = useAppStore((s) => s.body)
   const settings = useAppStore((s) => s.settings)
-  const data = useMemo(() => ({ logs, body, settings }), [logs, body, settings])
+  const overrides = useAppStore((s) => s.overrides)
+  const data = useMemo(() => ({ logs, body, settings, overrides }), [logs, body, settings, overrides])
 
   const programDay = cyclePosition(settings, date).programDay
   const previous = useMemo(
